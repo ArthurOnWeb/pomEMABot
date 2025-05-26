@@ -13,7 +13,7 @@ from bot.messages import START_MESSAGE, HELP_MESSAGE
 #     list_pairs as svc_list_pairs,
 #     remove_pair as svc_remove_pair
 # )
-from services.chart_generator import generate_chart
+# from services.chart_generator import generate_chart
 
 
 def register_handlers(app: Application) -> None:
