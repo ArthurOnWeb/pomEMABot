@@ -8,11 +8,11 @@ from telegram.ext import (
 )
 
 from bot.messages import START_MESSAGE, HELP_MESSAGE
-from services.alert_system import (
-    add_pair as svc_add_pair,
-    list_pairs as svc_list_pairs,
-    remove_pair as svc_remove_pair
-)
+# from services.alert_system import (
+#     add_pair as svc_add_pair,
+#     list_pairs as svc_list_pairs,
+#     remove_pair as svc_remove_pair
+# )
 from services.chart_generator import generate_chart
 
 
