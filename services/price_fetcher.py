@@ -1,19 +1,21 @@
 # services/price_fetcher.py
 
-import os
 import ccxt
 import pandas as pd
+from typing import Optional
 
-# Client Bitget unique
-_bitget_client: ccxt.Exchange | None = None
+# Instance unique du client Bitget (None tant qu'on n'appelle pas init_price_fetcher)
+_bitget_client: Optional[ccxt.Exchange] = None
 
 def init_price_fetcher(
-    api_key: str | None = None,
-    secret: str | None = None,
-    passphrase: str | None = None
+    api_key: Optional[str] = None,
+    secret: Optional[str] = None,
+    passphrase: Optional[str] = None
 ) -> None:
     """
-    Initialise le client Bitget (public si pas de clés, privé sinon).
+    Initialise le client Bitget :
+     - si on passe api_key/secret/passphrase → mode privé,
+     - sinon → mode public (pas de clé).
     """
     global _bitget_client
 
@@ -39,7 +41,7 @@ def fetch_ohlcv(
     """
     global _bitget_client
     if _bitget_client is None:
-        init_price_fetcher()  # sans clés = accès public
+        init_price_fetcher()  # mode public
 
     raw = _bitget_client.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
     df = pd.DataFrame(raw, columns=[
