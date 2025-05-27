@@ -40,6 +40,12 @@ def main():
         else:
             print("⚠️ Aucun chat_id : les alertes EMA sont désactivées.")
 
+    app = (
+        ApplicationBuilder()
+        .token(token)
+        .post_init(_start_scheduler)
+        .build()
+    )
 
     # 3) Enregistre tes handlers
     register_handlers(app)
