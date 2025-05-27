@@ -13,7 +13,7 @@ from services.price_fetcher import init_price_fetcher
 
 def main() -> None:
     load_dotenv()
-    token = os.getenv(TG_TOKEN)
+    token = os.getenv("TG_TOKEN")
     if not token:
         raise RuntimeError("Le token Telegram est manquant.")
 
