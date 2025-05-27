@@ -4,13 +4,14 @@ from dotenv import load_dotenv
 
 from telegram.ext import Application, ApplicationBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from typing import Optional
 
 # from config.settings import TG_TOKEN, SCHEDULER_INTERVAL_MINUTES
 from bot.handlers import register_handlers
 from services.alert_system import schedule_alerts
 from services.price_fetcher import init_price_fetcher
 
-def read_chat_id_from_file() -> int | None:
+def read_chat_id_from_file() -> Optional[int]:
     try:
         with open("chat_id.txt") as f:
             content = f.read().strip()
