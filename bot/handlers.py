@@ -39,8 +39,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     with open("chat_id.txt", "w") as f:
         f.write(str(chat_id))
-    await update.message.reply_text("✅ Chat enregistré !")
-
+    await update.message.reply_text(f"✅ Bot activé pour ce chat ! ID : `{chat_id}`", parse_mode="Markdown")
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

@@ -7,15 +7,13 @@ from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, detect_price_ema_cross, EMA_PERIOD
 
 # Chat ID par défaut (tu peux le remplacer ou le rendre dynamique plus tard)
-with open("chat_id.txt") as f:
-    YOUR_CHAT_ID = int(f.read().strip())
-
+YOUR_CHAT_ID = int(os.getenv("YOUR_CHAT_ID", "123456789"))
 
 # Paires à surveiller
 PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "HYPE/USDT"]
 TIMEFRAME = "1h"  # ou rendre configurable
 
-def schedule_alerts(scheduler: AsyncIOScheduler, app: Bot) -> None:
+def schedule_alerts(scheduler: AsyncIOScheduler, app: Bot, "chat_id": chat_id) -> None:
     """
     Planifie un check toutes les minutes pour chaque paire.
     """
@@ -24,7 +22,7 @@ def schedule_alerts(scheduler: AsyncIOScheduler, app: Bot) -> None:
             func=check_pair,
             trigger="interval",
             minutes=1,
-            kwargs={"bot": app.bot, "symbol": symbol},
+            kwargs={"bot": app.bot,"chat_id": chat_id, "symbol": symbol},
             id=f"alert_{symbol}",
             replace_existing=True,
         )
@@ -44,6 +42,6 @@ async def check_pair(bot: Bot, symbol: str) -> None:
         price = df.iloc[-1]["close"]
         timestamp = df.iloc[-1]["timestamp"]
         await bot.send_message(
-            chat_id=YOUR_CHAT_ID,
+            chat_id=chat_id,
             text=f"{direction} {symbol} à {price:.2f} USDT 📅 {timestamp:%Y-%m-%d %H:%M}"
         )

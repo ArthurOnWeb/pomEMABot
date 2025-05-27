@@ -10,6 +10,15 @@ from bot.handlers import register_handlers
 from services.alert_system import schedule_alerts
 from services.price_fetcher import init_price_fetcher
 
+def read_chat_id_from_file() -> int | None:
+    try:
+        with open("chat_id.txt") as f:
+            content = f.read().strip()
+            if content:
+                return int(content)
+    except FileNotFoundError:
+        pass
+    return None
 
 def main() -> None:
     load_dotenv()
@@ -17,8 +26,11 @@ def main() -> None:
     if not token:
         raise RuntimeError("Le token Telegram est manquant.")
 
-    # 1) Crée le scheduler (mais ne le démarre pas tout de suite)
-    scheduler = AsyncIOScheduler(timezone="UTC")
+    chat_id = read_chat_id_from_file()
+    if not chat_id:
+        print("❌ Aucun chat_id trouvé. Envoie /start au bot pour enregistrer ton chat.")
+    else:
+        scheduler = AsyncIOScheduler(timezone="UTC")
 
     # 2) Initialise l'application en lui passant une coroutine post_init
     async def _start_scheduler(app):
