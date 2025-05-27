@@ -99,7 +99,7 @@ async def last_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     symbol = args[0].upper()
 
     try:
-        df = fetch_ohlcv(symbol, timeframe=DEFAULT_TIMEFRAME, limit=EMA_PERIOD + 2)
+        df = fetch_ohlcv(symbol, timeframe=TIMEFRAME, limit=EMA_PERIOD + 2)
         df = compute_ema(df, span=EMA_PERIOD)
         last = df.iloc[-1]
 
@@ -108,7 +108,7 @@ async def last_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ts = last["timestamp"]
 
         await update.message.reply_text(
-            f"📊 Derniers indicateurs pour {symbol} ({DEFAULT_TIMEFRAME}):\n"
+            f"📊 Derniers indicateurs pour {symbol} ({TIMEFRAME}):\n"
             f"• Prix actuel : {price:.2f} USDT\n"
             f"• EMA{EMA_PERIOD} : {ema:.2f} USDT\n"
             f"• Bougie de : {ts:%Y-%m-%d %H:%M}"
