@@ -13,7 +13,7 @@ YOUR_CHAT_ID = int(os.getenv("YOUR_CHAT_ID", "123456789"))
 PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "HYPE/USDT"]
 TIMEFRAME = "1h"  # ou rendre configurable
 
-def schedule_alerts(scheduler: AsyncIOScheduler, app: Application, chat_id: int) -> None:
+def schedule_alerts(scheduler: AsyncIOScheduler, app: Bot, chat_id: int) -> None:
     """
     Planifie un check toutes les minutes pour chaque paire.
     """
