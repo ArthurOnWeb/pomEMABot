@@ -21,17 +21,20 @@ def read_chat_id_from_file() -> Optional[int]:
         pass
     return None
 
-def main() -> None:
+def main():
     load_dotenv()
     token = os.getenv("TG_TOKEN")
+
     if not token:
-        raise RuntimeError("Le token Telegram est manquant.")
+        raise RuntimeError("TG_TOKEN manquant")
 
     chat_id = read_chat_id_from_file()
     if not chat_id:
-        print("❌ Aucun chat_id trouvé. Envoie /start au bot pour enregistrer ton chat.")
-    else:
-        scheduler = AsyncIOScheduler(timezone="UTC")
+        print("❌ Aucun chat_id trouvé. Envoie /start à ton bot pour l’enregistrer.")
+        return
+
+    # ✅ Crée le scheduler AVANT la fonction qui l'utilise
+    scheduler = AsyncIOScheduler(timezone="UTC")
 
     # 2) Initialise l'application en lui passant une coroutine post_init
     async def _start_scheduler(app):
