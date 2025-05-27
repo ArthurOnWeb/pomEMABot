@@ -7,7 +7,9 @@ from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, detect_price_ema_cross, EMA_PERIOD
 
 # Chat ID par défaut (tu peux le remplacer ou le rendre dynamique plus tard)
-YOUR_CHAT_ID = int(os.getenv("YOUR_CHAT_ID", "123456789"))
+with open("chat_id.txt") as f:
+    YOUR_CHAT_ID = int(f.read().strip())
+
 
 # Paires à surveiller
 PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "HYPE/USDT"]

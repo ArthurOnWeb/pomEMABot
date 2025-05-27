@@ -35,8 +35,12 @@ def register_handlers(app: Application) -> None:
     logging.info("🚀 Handlers enregistrés avec succès.")
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(START_MESSAGE)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    with open("chat_id.txt", "w") as f:
+        f.write(str(chat_id))
+    await update.message.reply_text("✅ Chat enregistré !")
+
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
