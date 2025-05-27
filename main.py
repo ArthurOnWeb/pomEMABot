@@ -12,28 +12,29 @@ from services.price_fetcher import init_price_fetcher
 
 
 def main() -> None:
-    # Charge les variables d'environnement depuis .env
     load_dotenv()
-
-    # Initialise le bot Telegram
-    token = os.getenv("TG_TOKEN")
+    token = os.getenv(TG_TOKEN)
     if not token:
-        raise RuntimeError("Le token Telegram est manquant. Vérifie ton .env !")
-    app: Application = ApplicationBuilder().token(token).build()
+        raise RuntimeError("Le token Telegram est manquant.")
 
-    # Enregistre les handlers de commandes & callbacks
+    # 1) Crée le scheduler (mais ne le démarre pas tout de suite)
+    scheduler = AsyncIOScheduler(timezone="UTC")
+
+    # 2) Initialise l'application en lui passant une coroutine post_init
+    async def _start_scheduler(app):
+        schedule_alerts(scheduler, app)  # enregistre tes jobs
+        scheduler.start()               # <-- là, on est DANS le loop
+    app = (
+        ApplicationBuilder()
+        .token(token)
+        .post_init(_start_scheduler)
+        .build()
+    )
+
+    # 3) Enregistre tes handlers
     register_handlers(app)
 
-    # Initialise le fetcher de prix (ex: configuration CCXT)
-    init_price_fetcher()
-
-    # Planificateur APScheduler
-    scheduler = AsyncIOScheduler(timezone="UTC")
-    # Schedule les vérifications de croisements EMA
-    schedule_alerts(scheduler, app)
-    scheduler.start()
-
-    # Démarre le bot en mode polling
+    # 4) Lancement du bot (et du loop sous-jacent)
     app.run_polling()
 
 
