@@ -6,9 +6,6 @@ from telegram import Bot
 from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, detect_price_ema_cross, EMA_PERIOD
 
-# Chat ID par défaut (tu peux le remplacer ou le rendre dynamique plus tard)
-YOUR_CHAT_ID = int(os.getenv("YOUR_CHAT_ID", "123456789"))
-
 # Paires à surveiller
 PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "HYPE/USDT"]
 TIMEFRAME = "1h"  # ou rendre configurable

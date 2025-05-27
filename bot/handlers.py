@@ -7,6 +7,7 @@ from telegram.ext import (
     ContextTypes
 )
 
+from services.alert_system.py 
 from bot.messages import START_MESSAGE, HELP_MESSAGE
 # from services.alert_system import (
 #     add_pair as svc_add_pair,
@@ -15,6 +16,8 @@ from bot.messages import START_MESSAGE, HELP_MESSAGE
 # )
 # from services.chart_generator import generate_chart
 
+
+DEFAULT_PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "HYPE/USDT"]
 
 def register_handlers(app: Application) -> None:
     """
@@ -47,35 +50,41 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def add_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Ajoute une paire/timeframe à la surveillance."""
-    args = context.args
-    if len(args) != 2:
-        return await update.message.reply_text("Usage: /add <SYMBOL> <TIMEFRAME>")
-    symbol, timeframe = args
-    result = svc_add_pair(update.effective_chat.id, symbol.upper(), timeframe)
-    await update.message.reply_text(result)
+    # """Ajoute une paire/timeframe à la surveillance."""
+    # args = context.args
+    # if len(args) != 2:
+    #     return await update.message.reply_text("Usage: /add <SYMBOL> <TIMEFRAME>")
+    # symbol, timeframe = args
+    # result = svc_add_pair(update.effective_chat.id, symbol.upper(), timeframe)
+    # await update.message.reply_text(result)
+    await update.message.reply_text("⚠️ La commande /add n'est pas encore disponible.")
 
 
 async def list_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Liste les paires surveillées pour ce chat."""
-    result = svc_list_pairs(update.effective_chat.id)
-    await update.message.reply_text(result)
+    # result = svc_list_pairs(update.effective_chat.id)
+    # await update.message.reply_text(result)
+    message = "📋 Paires surveillées :\n" + "\n".join(f"• {pair}" for pair in DEFAULT_PAIRS) + "\n à vérifier dans le code"
+    await update.message.reply_text(message)
+
 
 
 async def remove_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Supprime une paire de la surveillance."""
-    args = context.args
-    if not args:
-        return await update.message.reply_text("Usage: /remove <SYMBOL>")
-    symbol = args[0].upper()
-    result = svc_remove_pair(update.effective_chat.id, symbol)
-    await update.message.reply_text(result)
+    # """Supprime une paire de la surveillance."""
+    # args = context.args
+    # if not args:
+    #     return await update.message.reply_text("Usage: /remove <SYMBOL>")
+    # symbol = args[0].upper()
+    # result = svc_remove_pair(update.effective_chat.id, symbol)
+    # await update.message.reply_text(result)
+    await update.message.reply_text("⚠️ La commande /remove n'est pas encore disponible.")
 
 
 async def chart_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Envoie un graphique OHLCV avec EMAs pour toutes les paires surveillées."""
-    buf = generate_chart(update.effective_chat.id)
-    await update.message.reply_photo(photo=buf)
+    # """Envoie un graphique OHLCV avec EMAs pour toutes les paires surveillées."""
+    # buf = generate_chart(update.effective_chat.id)
+    # await update.message.reply_photo(photo=buf)
+    await update.message.reply_text("📊 La génération de graphiques n'est pas encore disponible.")
 
 
 async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
