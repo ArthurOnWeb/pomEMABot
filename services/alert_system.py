@@ -13,7 +13,7 @@ YOUR_CHAT_ID = int(os.getenv("YOUR_CHAT_ID", "123456789"))
 PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "HYPE/USDT"]
 TIMEFRAME = "1h"  # ou rendre configurable
 
-def schedule_alerts(scheduler: AsyncIOScheduler, app: Bot, "chat_id": chat_id) -> None:
+def schedule_alerts(scheduler: AsyncIOScheduler, app: Application, chat_id: int) -> None:
     """
     Planifie un check toutes les minutes pour chaque paire.
     """
@@ -22,12 +22,12 @@ def schedule_alerts(scheduler: AsyncIOScheduler, app: Bot, "chat_id": chat_id) -
             func=check_pair,
             trigger="interval",
             minutes=1,
-            kwargs={"bot": app.bot,"chat_id": chat_id, "symbol": symbol},
+            kwargs={"bot": app.bot, "chat_id": chat_id, "symbol": symbol},
             id=f"alert_{symbol}",
             replace_existing=True,
         )
 
-async def check_pair(bot: Bot, symbol: str) -> None:
+async def check_pair(bot: Bot,chat_id: int, symbol: str) -> None:
     """
     Vérifie le croisement prix↔EMA100 et envoie une alerte si besoin.
     """

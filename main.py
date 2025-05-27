@@ -34,7 +34,7 @@ def main() -> None:
 
     # 2) Initialise l'application en lui passant une coroutine post_init
     async def _start_scheduler(app):
-        schedule_alerts(scheduler, app)  # enregistre tes jobs
+        schedule_alerts(scheduler, app, chat_id)  # enregistre tes jobs
         scheduler.start()               # <-- là, on est DANS le loop
     app = (
         ApplicationBuilder()
