@@ -22,12 +22,12 @@ def schedule_alerts(scheduler: AsyncIOScheduler, app: Bot) -> None:
             func=check_pair,
             trigger="interval",
             minutes=1,
-            kwargs={"app": app, "symbol": symbol},
+            kwargs={"bot": app.bot, "symbol": symbol},
             id=f"alert_{symbol}",
             replace_existing=True,
         )
 
-async def check_pair(app: Bot, symbol: str) -> None:
+async def check_pair(bot: Bot, symbol: str) -> None:
     """
     Vérifie le croisement prix↔EMA100 et envoie une alerte si besoin.
     """
@@ -41,7 +41,7 @@ async def check_pair(app: Bot, symbol: str) -> None:
         direction = "🔔 Croisement haussier" if signal == 1 else "🔔 Croisement baissier"
         price = df.iloc[-1]["close"]
         timestamp = df.iloc[-1]["timestamp"]
-        await app.send_message(
+        await bot.send_message(
             chat_id=YOUR_CHAT_ID,
             text=f"{direction} {symbol} à {price:.2f} USDT 📅 {timestamp:%Y-%m-%d %H:%M}"
         )
