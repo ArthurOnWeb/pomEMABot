@@ -24,28 +24,22 @@ def read_chat_id_from_file() -> Optional[int]:
 def main():
     load_dotenv()
     token = os.getenv("TG_TOKEN")
-
     if not token:
         raise RuntimeError("TG_TOKEN manquant")
 
+    # On tente de lire le chat_id (optionnel au démarrage)
     chat_id = read_chat_id_from_file()
-    if not chat_id:
-        print("❌ Aucun chat_id trouvé. Envoie /start à ton bot pour l’enregistrer.")
-        return
 
-    # ✅ Crée le scheduler AVANT la fonction qui l'utilise
     scheduler = AsyncIOScheduler(timezone="UTC")
 
-    # 2) Initialise l'application en lui passant une coroutine post_init
     async def _start_scheduler(app):
-        schedule_alerts(scheduler, app, chat_id)  # enregistre tes jobs
-        scheduler.start()               # <-- là, on est DANS le loop
-    app = (
-        ApplicationBuilder()
-        .token(token)
-        .post_init(_start_scheduler)
-        .build()
-    )
+        if chat_id:
+            print(f"✅ Chat ID trouvé : {chat_id} → démarrage des alertes.")
+            schedule_alerts(scheduler, app, chat_id)
+            scheduler.start()
+        else:
+            print("⚠️ Aucun chat_id : les alertes EMA sont désactivées.")
+
 
     # 3) Enregistre tes handlers
     register_handlers(app)
