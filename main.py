@@ -10,6 +10,11 @@ from typing import Optional
 from bot.handlers import register_handlers
 from services.alert_system import schedule_alerts
 from services.price_fetcher import init_price_fetcher
+from database.connection import engine, Base
+
+def init_db():
+    Base.metadata.create_all(bind=engine)
+
 
 def read_chat_id_from_file() -> Optional[int]:
     try:
@@ -29,7 +34,9 @@ def main():
 
     # On tente de lire le chat_id (optionnel au démarrage)
     chat_id = read_chat_id_from_file()
-
+    
+    init_db()
+    
     scheduler = AsyncIOScheduler(timezone="UTC")
 
     async def _start_scheduler(app):
