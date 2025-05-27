@@ -7,7 +7,7 @@ from telegram.ext import (
     ContextTypes
 )
 
-from bot.messages import START_MESSAGE, HELP_MESSAGE
+from bot.messages import HELP_MESSAGE
 # from services.alert_system import (
 #     add_pair as svc_add_pair,
 #     list_pairs as svc_list_pairs,
