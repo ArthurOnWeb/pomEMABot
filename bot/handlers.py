@@ -6,6 +6,9 @@ from telegram.ext import (
     CallbackQueryHandler,
     ContextTypes
 )
+from services.alert_system import PAIRS,TIMEFRAME
+from services.price_fetcher import fetch_ohlcv
+from services.technical_analysis import compute_ema, EMA_PERIOD
 
 from bot.messages import HELP_MESSAGE
 # from services.alert_system import (
@@ -29,6 +32,8 @@ def register_handlers(app: Application) -> None:
     app.add_handler(CommandHandler("add", add_command))
     app.add_handler(CommandHandler("list", list_command))
     app.add_handler(CommandHandler("remove", remove_command))
+    # Prix et EMA à la demande
+    app.add_handler(CommandHandler("last", last_command))
     # Graphe à la demande
     app.add_handler(CommandHandler("chart", chart_command))
     # Callbacks pour les inline buttons (si utilisés)
@@ -63,7 +68,7 @@ async def list_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     """Liste les paires surveillées pour ce chat."""
     # result = svc_list_pairs(update.effective_chat.id)
     # await update.message.reply_text(result)
-    message = "📋 Paires surveillées :\n" + "\n".join(f"• {pair}" for pair in DEFAULT_PAIRS) + "\n à vérifier dans le code"
+    message = "📋 Paires surveillées :\n" + "\n".join(f"• {pair}" for pair in PAIRS) + "\n à vérifier dans le code"
     await update.message.reply_text(message)
 
 
@@ -84,6 +89,33 @@ async def chart_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     # buf = generate_chart(update.effective_chat.id)
     # await update.message.reply_photo(photo=buf)
     await update.message.reply_text("📊 La génération de graphiques n'est pas encore disponible.")
+
+async def last_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    args = context.args
+    if not args:
+        await update.message.reply_text("❌ Utilisation : /last <SYMBOL> (ex: /last BTC/USDT)")
+        return
+
+    symbol = args[0].upper()
+
+    try:
+        df = fetch_ohlcv(symbol, timeframe=DEFAULT_TIMEFRAME, limit=EMA_PERIOD + 2)
+        df = compute_ema(df, span=EMA_PERIOD)
+        last = df.iloc[-1]
+
+        price = last["close"]
+        ema = last["ema"]
+        ts = last["timestamp"]
+
+        await update.message.reply_text(
+            f"📊 Derniers indicateurs pour {symbol} ({DEFAULT_TIMEFRAME}):\n"
+            f"• Prix actuel : {price:.2f} USDT\n"
+            f"• EMA{EMA_PERIOD} : {ema:.2f} USDT\n"
+            f"• Bougie de : {ts:%Y-%m-%d %H:%M}"
+        )
+    except Exception as e:
+        await update.message.reply_text(f"❌ Impossible d'obtenir les données pour {symbol}.")
+        print(f"[ERREUR] /last {symbol} : {e}")
 
 
 async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
