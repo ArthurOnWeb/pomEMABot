@@ -10,6 +10,9 @@ from services.alert_system import PAIRS,TIMEFRAME
 from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, EMA_PERIOD
 
+from database.connection import SessionLocal
+from database.crud import get_pairs, add_pair, remove_pair
+
 from bot.messages import HELP_MESSAGE
 # from services.alert_system import (
 #     add_pair as svc_add_pair,
@@ -52,36 +55,75 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(HELP_MESSAGE)
 
+async def add_command(update, context):
+    chat_id = update.effective_chat.id
+    args = context.args
+    if len(args) < 2:
+        return await update.message.reply_text("Usage : /add <SYMBOL> <TIMEFRAME>")
+    symbol, timeframe = args[0].upper(), args[1]
+    db = SessionLocal()
+    pair = add_pair(db, chat_id, symbol, timeframe)
+    db.close()
+    if pair:
+        await update.message.reply_text(f"✅ {symbol} ({timeframe}) ajouté.")
+    else:
+        await update.message.reply_text(f"⚠️ {symbol} ({timeframe}) existe déjà.")
 
-async def add_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # """Ajoute une paire/timeframe à la surveillance."""
-    # args = context.args
-    # if len(args) != 2:
-    #     return await update.message.reply_text("Usage: /add <SYMBOL> <TIMEFRAME>")
-    # symbol, timeframe = args
-    # result = svc_add_pair(update.effective_chat.id, symbol.upper(), timeframe)
-    # await update.message.reply_text(result)
-    await update.message.reply_text("⚠️ La commande /add n'est pas encore disponible.")
+async def list_command(update, context):
+    chat_id = update.effective_chat.id
+    db = SessionLocal()
+    pairs = get_pairs(db, chat_id)
+    db.close()
+    if not pairs:
+        return await update.message.reply_text("📭 Aucune paire suivie.")
+    text = "📋 Paires suivies :\n" + "\n".join(
+        f"• {p.symbol} ({p.timeframe})" for p in pairs
+    )
+    await update.message.reply_text(text)
+
+async def remove_command(update, context):
+    chat_id = update.effective_chat.id
+    args = context.args
+    if not args:
+        return await update.message.reply_text("Usage : /remove <SYMBOL>")
+    symbol = args[0].upper()
+    db = SessionLocal()
+    count = remove_pair(db, chat_id, symbol)
+    db.close()
+    if count:
+        await update.message.reply_text(f"✅ {symbol} supprimé.")
+    else:
+        await update.message.reply_text(f"❌ {symbol} introuvable.")
+
+# async def add_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+#     # """Ajoute une paire/timeframe à la surveillance."""
+#     # args = context.args
+#     # if len(args) != 2:
+#     #     return await update.message.reply_text("Usage: /add <SYMBOL> <TIMEFRAME>")
+#     # symbol, timeframe = args
+#     # result = svc_add_pair(update.effective_chat.id, symbol.upper(), timeframe)
+#     # await update.message.reply_text(result)
+#     await update.message.reply_text("⚠️ La commande /add n'est pas encore disponible.")
 
 
-async def list_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Liste les paires surveillées pour ce chat."""
-    # result = svc_list_pairs(update.effective_chat.id)
-    # await update.message.reply_text(result)
-    message = "📋 Paires surveillées :\n" + "\n".join(f"• {pair}" for pair in PAIRS) + "\n à vérifier dans le code"
-    await update.message.reply_text(message)
+# async def list_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+#     """Liste les paires surveillées pour ce chat."""
+#     # result = svc_list_pairs(update.effective_chat.id)
+#     # await update.message.reply_text(result)
+#     message = "📋 Paires surveillées :\n" + "\n".join(f"• {pair}" for pair in PAIRS) + "\n à vérifier dans le code"
+#     await update.message.reply_text(message)
 
 
 
-async def remove_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # """Supprime une paire de la surveillance."""
-    # args = context.args
-    # if not args:
-    #     return await update.message.reply_text("Usage: /remove <SYMBOL>")
-    # symbol = args[0].upper()
-    # result = svc_remove_pair(update.effective_chat.id, symbol)
-    # await update.message.reply_text(result)
-    await update.message.reply_text("⚠️ La commande /remove n'est pas encore disponible.")
+# async def remove_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+#     # """Supprime une paire de la surveillance."""
+#     # args = context.args
+#     # if not args:
+#     #     return await update.message.reply_text("Usage: /remove <SYMBOL>")
+#     # symbol = args[0].upper()
+#     # result = svc_remove_pair(update.effective_chat.id, symbol)
+#     # await update.message.reply_text(result)
+#     await update.message.reply_text("⚠️ La commande /remove n'est pas encore disponible.")
 
 
 async def chart_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
