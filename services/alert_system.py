@@ -27,7 +27,7 @@ def schedule_alerts(scheduler: AsyncIOScheduler, bot: Bot, chat_id: int) -> None
             trigger="interval",
             minutes=1,
             kwargs={
-                "bot": app.bot,
+                "bot": bot,
                 "chat_id": chat_id,
                 "symbol": symbol,
                 "timeframe": timeframe,
