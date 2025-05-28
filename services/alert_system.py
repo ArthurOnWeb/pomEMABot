@@ -1,6 +1,7 @@
 # services/alert_system.py
 
 import os
+from typing import Dict, Tuple
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram import Bot
 from database.connection import SessionLocal
@@ -9,7 +10,7 @@ from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, detect_price_ema_cross, EMA_PERIOD
 
 # On stocke pour chaque (chat_id, symbol, timeframe) la dernière valeur de signal envoyée
-_last_signals: dict[tuple[int,str,str], int] = {}
+_last_signals: Dict[Tuple[int, str, str], int] = {}
 
 def schedule_alerts(scheduler: AsyncIOScheduler, bot: Bot, chat_id: int) -> None:
     """
