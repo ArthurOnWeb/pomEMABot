@@ -8,6 +8,9 @@ from database.crud import get_pairs
 from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, detect_price_ema_cross, EMA_PERIOD
 
+# On stocke pour chaque (chat_id, symbol, timeframe) la dernière valeur de signal envoyée
+_last_signals: dict[tuple[int,str,str], int] = {}
+
 def schedule_alerts(scheduler: AsyncIOScheduler, bot: Bot, chat_id: int) -> None:
     """
     Planifie un check toutes les minutes pour chaque paire configurée en base.
@@ -38,21 +41,38 @@ def schedule_alerts(scheduler: AsyncIOScheduler, bot: Bot, chat_id: int) -> None
             misfire_grace_time=30,
         )
 
-async def check_pair(bot: Bot,chat_id: int, symbol: str, timeframe: str) -> None:
+async def check_pair(
+    bot: Bot,
+    chat_id: int,
+    symbol: str,
+    timeframe: str,
+) -> None:
     """
-    Vérifie le croisement prix↔EMA100 et envoie une alerte si besoin.
+    Vérifie le croisement prix↔EMA100 pour une paire/timeframe
+    et n'envoie une alerte que si le signal a changé depuis la dernière exécution.
     """
-    # on récupère juste assez de bougies pour EMA_PERIOD+2
     limit = EMA_PERIOD + 2
     df = fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
     df = compute_ema(df, span=EMA_PERIOD)
-    signal = detect_price_ema_cross(df)
+    signal = detect_price_ema_cross(df)  #  1, -1 ou 0
 
-    if signal != 0:
+    key = (chat_id, symbol, timeframe)
+    last = _last_signals.get(key, 0)
+
+    # On ne notifie que si on passe d'un état à un autre non-nul
+    if signal != 0 and signal != last:
         direction = "🔔 Croisement haussier" if signal == 1 else "🔔 Croisement baissier"
         price = df.iloc[-1]["close"]
         timestamp = df.iloc[-1]["timestamp"]
         await bot.send_message(
             chat_id=chat_id,
-            text=f"{direction} {symbol} à {price:.2f} USDT 📅 {timestamp:%Y-%m-%d %H:%M}"
+            text=(
+                f"{direction} {symbol} ({timeframe}) à {price:.2f} USDT  "
+                f"📅 {timestamp:%Y-%m-%d %H:%M}"
+            )
         )
+        _last_signals[key] = signal
+
+    # Si on repasse en « inactif » (signal 0), on réinitialise pour détecter le prochain croisement
+    elif signal == 0 and last != 0:
+        _last_signals[key] = 0
