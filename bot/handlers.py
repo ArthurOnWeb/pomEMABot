@@ -6,7 +6,7 @@ from telegram.ext import (
     CallbackQueryHandler,
     ContextTypes
 )
-from services.alert_system import PAIRS,TIMEFRAME
+
 from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, EMA_PERIOD
 
@@ -21,8 +21,6 @@ from bot.messages import HELP_MESSAGE
 # )
 # from services.chart_generator import generate_chart
 
-
-DEFAULT_PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "HYPE/USDT"]
 
 def register_handlers(app: Application) -> None:
     """
@@ -135,13 +133,19 @@ async def chart_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 async def last_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if not args:
-        await update.message.reply_text("❌ Utilisation : /last <SYMBOL> (ex: /last BTC/USDT)")
+        await update.message.reply_text(
+            "❌ Utilisation : /last <SYMBOL> [TIMEFRAME]\n"
+            "Exemple : /last BTC/USDT 4h"
+        )
         return
 
     symbol = args[0].upper()
+    # Par défaut 1h si pas de timeframe fourni
+    timeframe = args[1] if len(args) > 1 else "1h"
 
     try:
-        df = fetch_ohlcv(symbol, timeframe=TIMEFRAME, limit=EMA_PERIOD + 2)
+        # on récupère juste assez de bougies
+        df = fetch_ohlcv(symbol, timeframe=timeframe, limit=EMA_PERIOD + 2)
         df = compute_ema(df, span=EMA_PERIOD)
         last = df.iloc[-1]
 
@@ -150,14 +154,17 @@ async def last_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ts = last["timestamp"]
 
         await update.message.reply_text(
-            f"📊 Derniers indicateurs pour {symbol} ({TIMEFRAME}):\n"
+            f"📊 Derniers indicateurs pour {symbol} ({timeframe}):\n"
             f"• Prix actuel : {price:.2f} USDT\n"
             f"• EMA{EMA_PERIOD} : {ema:.2f} USDT\n"
             f"• Bougie de : {ts:%Y-%m-%d %H:%M}"
         )
     except Exception as e:
-        await update.message.reply_text(f"❌ Impossible d'obtenir les données pour {symbol}.")
-        print(f"[ERREUR] /last {symbol} : {e}")
+        await update.message.reply_text(
+            f"❌ Impossible d'obtenir les données pour {symbol} en {timeframe}."
+        )
+        # Log détaillé en console pour debug
+        print(f"[ERREUR] /last {symbol} {timeframe} : {e}")
 
 
 async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
