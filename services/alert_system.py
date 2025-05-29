@@ -12,7 +12,7 @@ from services.technical_analysis import compute_ema, detect_price_ema_cross, EMA
 # On stocke pour chaque (chat_id, symbol, timeframe) la dernière valeur de signal envoyée
 _last_signals: Dict[Tuple[int, str, str], int] = {}
 
-def schedule_alerts(scheduler: AsyncIOScheduler, app: Application, chat_id: int) -> None:
+def schedule_alerts(scheduler: AsyncIOScheduler, app: Bot, chat_id: int) -> None:
     """
     Planifie un check toutes les minutes pour chaque paire configurée en base.
     """
@@ -31,7 +31,6 @@ def schedule_alerts(scheduler: AsyncIOScheduler, app: Application, chat_id: int)
             trigger="interval",
             minutes=1,
             kwargs={
-                "app": Application,
                 "bot": app.bot,
                 "chat_id": chat_id,
                 "symbol": symbol,
