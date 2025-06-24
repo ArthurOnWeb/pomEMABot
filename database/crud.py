@@ -50,3 +50,21 @@ def remove_price_alert(db: Session, alert_id: int):
     db.query(PriceAlert).filter(PriceAlert.id == alert_id).delete()
     db.commit()
 
+
+def remove_price_alert_by_value(
+    db: Session, chat_id: int, symbol: str, target_price: float
+) -> int:
+    """Supprime une alerte de prix identifiée par sa valeur."""
+    count = (
+        db.query(PriceAlert)
+        .filter(
+            PriceAlert.chat_id == chat_id,
+            PriceAlert.symbol == symbol,
+            PriceAlert.target_price == target_price,
+            PriceAlert.active == True,
+        )
+        .delete()
+    )
+    db.commit()
+    return count
+

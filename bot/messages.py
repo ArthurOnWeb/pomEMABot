@@ -18,6 +18,7 @@ HELP_MESSAGE = (
     "• `/list` : liste tes paires actives\n"
     "• `/remove BTC/USDT` : arrête de surveiller cette paire\n"
     "• `/alert BTC/USDT 30000` : alerte de prix personnalisée\n"
+    "• `/removealert BTC/USDT 30000` : supprime cette alerte\n"
     "• `/chart` : génère un graphique OHLCV avec EMA100\n\n"
     "Le bot vérifie les croisements chaque minute et t’envoie une alerte."
 )
