@@ -11,7 +11,13 @@ from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, EMA_PERIOD
 
 from database.connection import SessionLocal
-from database.crud import get_pairs, add_pair, remove_pair
+from database.crud import (
+    get_pairs,
+    add_pair,
+    remove_pair,
+    add_price_alert,
+    get_price_alerts,
+)
 
 from bot.messages import HELP_MESSAGE
 # from services.alert_system import (
@@ -33,6 +39,8 @@ def register_handlers(app: Application) -> None:
     app.add_handler(CommandHandler("add", add_command))
     app.add_handler(CommandHandler("list", list_command))
     app.add_handler(CommandHandler("remove", remove_command))
+    app.add_handler(CommandHandler("alert", alert_command))
+    app.add_handler(CommandHandler("alerts", list_alerts_command))
     # Prix et EMA à la demande
     app.add_handler(CommandHandler("last", last_command))
     # Graphe à la demande
@@ -92,6 +100,49 @@ async def remove_command(update, context):
         await update.message.reply_text(f"✅ {symbol} supprimé.")
     else:
         await update.message.reply_text(f"❌ {symbol} introuvable.")
+
+
+async def alert_command(update, context):
+    chat_id = update.effective_chat.id
+    args = context.args
+    if len(args) < 2:
+        return await update.message.reply_text("Usage : /alert <SYMBOL> <PRIX>")
+    symbol = args[0].upper()
+    try:
+        target = float(args[1])
+    except ValueError:
+        return await update.message.reply_text("❌ Prix invalide.")
+
+    try:
+        df = fetch_ohlcv(symbol, timeframe="1m", limit=1)
+        current_price = df.iloc[-1]["close"]
+    except Exception:
+        return await update.message.reply_text(f"❌ Impossible de récupérer {symbol}.")
+
+    direction = "above" if current_price < target else "below"
+    db = SessionLocal()
+    add_price_alert(db, chat_id, symbol, target, direction)
+    db.close()
+
+    sign = ">=" if direction == "above" else "<="
+    await update.message.reply_text(
+        f"🔔 Alerte enregistrée : {symbol} {sign} {target:.2f} USDT"
+    )
+
+
+async def list_alerts_command(update, context):
+    chat_id = update.effective_chat.id
+    db = SessionLocal()
+    alerts = get_price_alerts(db, chat_id)
+    db.close()
+    if not alerts:
+        return await update.message.reply_text("📭 Aucune alerte enregistrée.")
+
+    lines = [
+        f"• {a.symbol} {'≥' if a.direction == 'above' else '≤'} {a.target_price:.2f}"
+        for a in alerts
+    ]
+    await update.message.reply_text("📋 Alertes en cours :\n" + "\n".join(lines))
 
 # async def add_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 #     # """Ajoute une paire/timeframe à la surveillance."""
