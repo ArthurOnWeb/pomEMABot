@@ -17,6 +17,7 @@ from database.crud import (
     remove_pair,
     add_price_alert,
     get_price_alerts,
+    remove_price_alert_by_value,
 )
 
 from bot.messages import HELP_MESSAGE
@@ -41,6 +42,7 @@ def register_handlers(app: Application) -> None:
     app.add_handler(CommandHandler("remove", remove_command))
     app.add_handler(CommandHandler("alert", alert_command))
     app.add_handler(CommandHandler("alerts", list_alerts_command))
+    app.add_handler(CommandHandler("removealert", remove_alert_command))
     # Prix et EMA à la demande
     app.add_handler(CommandHandler("last", last_command))
     # Graphe à la demande
@@ -143,6 +145,30 @@ async def list_alerts_command(update, context):
         for a in alerts
     ]
     await update.message.reply_text("📋 Alertes en cours :\n" + "\n".join(lines))
+
+
+async def remove_alert_command(update, context):
+    chat_id = update.effective_chat.id
+    args = context.args
+    if len(args) < 2:
+        return await update.message.reply_text(
+            "Usage : /removealert <SYMBOL> <PRIX>"
+        )
+
+    symbol = args[0].upper()
+    try:
+        target = float(args[1])
+    except ValueError:
+        return await update.message.reply_text("❌ Prix invalide.")
+
+    db = SessionLocal()
+    count = remove_price_alert_by_value(db, chat_id, symbol, target)
+    db.close()
+
+    if count:
+        await update.message.reply_text("✅ Alerte supprimée.")
+    else:
+        await update.message.reply_text("❌ Alerte introuvable.")
 
 # async def add_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 #     # """Ajoute une paire/timeframe à la surveillance."""
