@@ -4,3 +4,4 @@ APScheduler==3.11.0
 ccxt==4.4.85
 pandas==2.0.3
 SQLAlchemy==2.0.41
+mplfinance==0.12.9b7

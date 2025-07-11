@@ -9,6 +9,7 @@ from telegram.ext import (
 
 from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, EMA_PERIOD
+from services.chart_generator import generate_chart
 
 from database.connection import SessionLocal
 from database.crud import (
@@ -202,10 +203,25 @@ async def remove_alert_command(update, context):
 
 
 async def chart_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # """Envoie un graphique OHLCV avec EMAs pour toutes les paires surveillées."""
-    # buf = generate_chart(update.effective_chat.id)
-    # await update.message.reply_photo(photo=buf)
-    await update.message.reply_text("📊 La génération de graphiques n'est pas encore disponible.")
+    """Génère et envoie un graphique OHLCV avec l'EMA100."""
+    args = context.args
+    if not args:
+        await update.message.reply_text(
+            "❌ Utilisation : /chart <SYMBOL> [TIMEFRAME]\nExemple : /chart BTC/USDT 4h"
+        )
+        return
+
+    symbol = args[0].upper()
+    timeframe = args[1] if len(args) > 1 else "1h"
+
+    try:
+        buf = generate_chart(symbol, timeframe)
+        await update.message.reply_photo(photo=buf)
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ Impossible de générer le graphique pour {symbol} en {timeframe}."
+        )
+        print(f"[ERREUR] /chart {symbol} {timeframe} : {e}")
 
 async def last_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
