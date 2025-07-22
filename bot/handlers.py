@@ -268,7 +268,13 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     # Exemple de parsing: "remove:BTCUSDT"
     cmd, payload = data.split(":", 1)
     if cmd == "remove":
-        response = svc_remove_pair(update.effective_chat.id, payload)
-        await query.edit_message_text(response)
+        chat_id = update.effective_chat.id
+        db = SessionLocal()
+        count = remove_pair(db, chat_id, payload)
+        db.close()
+        if count:
+            await query.edit_message_text(f"✅ {payload} supprimé.")
+        else:
+            await query.edit_message_text(f"❌ {payload} introuvable.")
     else:
         await query.edit_message_text("Action non reconnue.")
