@@ -1,1 +1,5 @@
 .env
+
+ema_bot.db
+chat_id.txt
+__pycache__
