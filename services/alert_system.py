@@ -1,6 +1,5 @@
 # services/alert_system.py
 
-import os
 from typing import Dict, Tuple
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram import Bot
