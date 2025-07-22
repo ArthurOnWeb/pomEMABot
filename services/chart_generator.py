@@ -1,5 +1,6 @@
 import io
 import mplfinance as mpf
+import matplotlib.pyplot as plt
 
 from services.price_fetcher import fetch_ohlcv
 from services.technical_analysis import compute_ema, EMA_PERIOD
@@ -40,5 +41,6 @@ def generate_chart(symbol: str, timeframe: str = "1h") -> io.BytesIO:
 
     buf = io.BytesIO()
     fig.savefig(buf, format="png")
+    plt.close(fig)
     buf.seek(0)
     return buf
