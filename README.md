@@ -18,3 +18,32 @@ Le graphique est généré grâce à `mplfinance`. Pense à installer les dépen
 pip install -r requirements.txt
 ```
 
+## Configuration
+
+Crée un fichier `.env` à la racine du projet contenant le token de ton bot Telegram :
+
+```
+TG_TOKEN=123456:ABCDEF
+```
+
+Remplace la valeur par le token obtenu auprès de BotFather.
+
+## Base de données
+
+Le bot stocke les paires surveillées et les alertes dans une base SQLite nommée `ema_bot.db`. Ce fichier est créé automatiquement au premier démarrage.
+
+## Lancement du bot
+
+1. Installe les dépendances :
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. Lance le bot avec :
+
+   ```bash
+   python main.py
+   ```
+
+   Le bot se connecte ensuite à Telegram et démarre la surveillance 
