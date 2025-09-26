@@ -1,0 +1,14 @@
+services:
+  pomemabot:
+    build: .
+    container_name: pomemabot
+    env_file:
+      - .env           # must contain TG_TOKEN=xxxxx
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - pomema-data:/data   # persists ema_bot.db
+    restart: unless-stopped
+
+volumes:
+  pomema-data:
