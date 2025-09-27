@@ -4,8 +4,8 @@ import ccxt
 import pandas as pd
 from typing import Optional
 
-# Instance unique du client Bitget (None tant qu'on n'appelle pas init_price_fetcher)
-_bitget_client: Optional[ccxt.Exchange] = None
+# Instance unique du client Binance (None tant qu'on n'appelle pas init_price_fetcher)
+_binance_client: Optional[ccxt.Exchange] = None
 
 def init_price_fetcher(
     api_key: Optional[str] = None,
@@ -13,21 +13,20 @@ def init_price_fetcher(
     passphrase: Optional[str] = None
 ) -> None:
     """
-    Initialise le client Bitget :
-     - si on passe api_key/secret/passphrase → mode privé,
+    Initialise le client Binance :
+     - si on passe api_key/secret → mode privé,
      - sinon → mode public (pas de clé).
     """
-    global _bitget_client
+    global _binance_client
 
     creds: dict = {'enableRateLimit': True}
-    if api_key and secret and passphrase:
+    if api_key and secret:
         creds.update({
             'apiKey': api_key,
             'secret': secret,
-            'password': passphrase,
         })
 
-    _bitget_client = ccxt.bitget(creds)
+    _binance_client = ccxt.binance(creds)
 
 
 def fetch_ohlcv(
@@ -36,14 +35,24 @@ def fetch_ohlcv(
     limit: int = 100,
 ) -> pd.DataFrame:
     """
-    Récupère un DataFrame OHLCV pour la paire donnée sur Bitget.
+    Récupère un DataFrame OHLCV pour la paire donnée sur Binance.
+    Normalise le symbole si nécessaire (ex: 'ETHUSD' → 'ETH/USDT').
     Initialise automatiquement un client public si nécessaire.
     """
-    global _bitget_client
-    if _bitget_client is None:
+    global _binance_client
+    if _binance_client is None:
         init_price_fetcher()  # mode public
 
-    raw = _bitget_client.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
+    # Normalisation du symbole pour CCXT (format unifié)
+    if '/' not in symbol:
+        if symbol.endswith('USD'):
+            # Remplace 'USD' par '/USDT' pour les paires USDT
+            symbol = symbol[:-3] + '/USDT'
+        else:
+            # Assume paire USDT et ajoute '/USDT'
+            symbol = symbol + '/USDT'
+
+    raw = _binance_client.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
     df = pd.DataFrame(raw, columns=[
         "timestamp", "open", "high", "low", "close", "volume"
     ])

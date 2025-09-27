@@ -1,4 +1,5 @@
 .env
+.venv
 
 ema_bot.db
 chat_id.txt
